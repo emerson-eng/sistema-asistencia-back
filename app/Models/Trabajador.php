@@ -21,11 +21,17 @@ class Trabajador extends Model
         'cargo',
         'telefono',
         'direccion',
-        'id_tipo'
+        'id_tipo',
+        'user_id', // <-- NUEVO
     ];
 
-    public function tipo_trabajador()
+    public function tipoTrabajador()
+{
+    return $this->belongsTo(\App\Models\TipoTrabajador::class, 'id_tipo', 'id_tipo');
+}
+
+      public function user()
     {
-         return $this->belongsTo(TipoTrabajador::class, 'id_tipo');
+        return $this->belongsTo(User::class);
     }
 }

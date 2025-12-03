@@ -20,6 +20,8 @@ class TrabajadorFactory extends Factory
             'telefono' => $this->faker->phoneNumber(),
             'direccion' => $this->faker->address(),
             'id_tipo' => TipoTrabajador::inRandomOrder()->first()->id_tipo,
+         
+
         ];
     }
 }

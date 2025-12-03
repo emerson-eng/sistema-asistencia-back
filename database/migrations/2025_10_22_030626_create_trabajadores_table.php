@@ -25,6 +25,12 @@ return new class extends Migration
             ->references('id_tipo')->on('tipo_trabajadores')
             ->onDelete('cascade');
 
+            $table->unsignedBigInteger('user_id')->nullable()->unique();
+            $table->foreign('user_id')
+            ->references('id')
+            ->on('users')
+            ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

@@ -1,3 +1,56 @@
+//BASE DE DATOS
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations. Probando commit
+     */
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('sessions');
+    }
+};
+
+
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -28,8 +81,6 @@ return new class extends Migration
 };
 
 
-
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -40,43 +91,45 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
-            // PK autoincremental con nombre personalizado
-            $table->increments('id_estudiante');
+        // ✔ Evita error si la tabla ya existe
+        if (!Schema::hasTable('students')) {
 
-            $table->string('dni', 8)->unique();
-            $table->string('nombres', 100);
-            $table->string('apellidos', 100);
-            $table->date('fecha_nacimiento');
-            $table->string('genero', 10);
-            $table->string('direccion', 150)->nullable();
-            $table->string('telefono', 20)->nullable();
-            $table->string('estado', 20)->default('activo');
-            $table->unsignedInteger('id_grado');
-            $table->foreign('id_grado')
-                  ->references('id_grado')
-                  ->on('grados')
-                  ->cascadeOnUpdate()
-                  ->restrictOnDelete();
+            Schema::create('students', function (Blueprint $table) {
+                $table->increments('id_estudiante');
 
-            // Timestamps
-            $table->timestamps();
-        });
+                $table->string('dni', 8)->unique();
+                $table->string('nombres', 100);
+                $table->string('apellidos', 100);
+                $table->date('fecha_nacimiento');
+                $table->string('genero', 10);
+                $table->string('direccion', 150)->nullable();
+                $table->string('telefono', 20)->nullable();
+                $table->string('estado', 20)->default('activo');
+
+                $table->unsignedInteger('id_grado');
+                $table->foreign('id_grado')
+                      ->references('id_grado')
+                      ->on('grados')
+                      ->cascadeOnUpdate()
+                      ->restrictOnDelete();
+
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
     {
+        // ✔ Primero elimina el foreign key
         Schema::table('students', function (Blueprint $table) {
-
-            $table->dropForeign(['id_grado']);
+            if (Schema::hasColumn('students', 'id_grado')) {
+                $table->dropForeign(['id_grado']);
+            }
         });
 
         Schema::dropIfExists('students');
     }
 };
-
-
-
 
 
 <?php
@@ -104,8 +157,6 @@ return new class extends Migration
 };
 
 
-
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -129,7 +180,7 @@ return new class extends Migration
                   ->restrictOnDelete();
 
 
-            $table->string('nombre_seccion', 10);
+            $table->string('nombre_seccion', 50);
             $table->integer('capacidad');
             $table->integer('anio_lectivo');
 
@@ -149,9 +200,6 @@ return new class extends Migration
 };
 
 
-
-
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -163,23 +211,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('trabajadores', function (Blueprint $table) {
-
+           
             $table->increments('id_trabajador');
 
-
-            $table->string('dni', 8)->unique();
-            $table->string('nombres', 100);
-            $table->string('apellidos', 100);
-            $table->string('cargo', 50);
-            $table->string('telefono', 20)->nullable();
-            $table->string('direccion', 150)->nullable();
+        
+            $table->string('dni', 8)->unique();          
+            $table->string('nombres', 100);              
+            $table->string('apellidos', 100);             
+            $table->string('cargo', 50);                  
+            $table->string('telefono', 20)->nullable();   
+            $table->string('direccion', 150)->nullable(); 
 
             $table->unsignedInteger('id_tipo');
             $table->foreign('id_tipo')
-                  ->references('id_tipo')
-                  ->on('tipo_trabajadores')
-                  ->cascadeOnUpdate()
-                  ->restrictOnDelete();
+            ->references('id_tipo')->on('tipo_trabajadores')
+            ->onDelete('cascade');
 
             $table->timestamps();
         });
@@ -196,8 +242,6 @@ return new class extends Migration
 };
 
 
-
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -209,7 +253,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('asistencias', function (Blueprint $table) {
-
+            
             $table->increments('id_asistencia');
             $table->unsignedInteger('id_estudiante');
             $table->foreign('id_estudiante')
@@ -225,11 +269,11 @@ return new class extends Migration
                   ->cascadeOnUpdate()
                   ->restrictOnDelete();
 
-            $table->dateTime('fecha');
-            $table->time('hora_entrada')->nullable();
-            $table->time('hora_salida')->nullable();
-            $table->string('estado', 20);
-            $table->string('observacion', 150)->nullable();
+            $table->dateTime('fecha');                
+            $table->time('hora_entrada')->nullable(); 
+            $table->time('hora_salida')->nullable();  
+            $table->string('estado', 20);             
+            $table->string('observacion', 150)->nullable(); 
 
             $table->timestamps();
         });

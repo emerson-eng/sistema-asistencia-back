@@ -13,7 +13,7 @@ class TipoTrabajadorFactory extends Factory
     {
         return [
             'nombre_tipo' => $this->faker->randomElement([
-                'Docente', 'Administrador', 'Director', 'Secretaria', 'Auxiliar'
+                'Administrador','Auxiliar'
             ]),
             'descripcion' => $this->faker->sentence(5),
         ];
